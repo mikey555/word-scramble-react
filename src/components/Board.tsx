@@ -111,7 +111,7 @@ export default function Board({config, roomCode, gameId}: BoardProps) {
         }
         if (newSwappedLetterState != swappedLetterState) {
             setSwappedLetterState(newSwappedLetterState);
-            console.log(newSwappedLetterState);
+
         }
     };
 
@@ -125,7 +125,7 @@ export default function Board({config, roomCode, gameId}: BoardProps) {
     };
 
     const clearSwappedLetterState = () => {
-        console.log('clearSwappedLetterState')
+        // console.log('clearSwappedLetterState')
         setSwappedLetterState(undefined);
     };
 
@@ -184,7 +184,7 @@ export default function Board({config, roomCode, gameId}: BoardProps) {
                                     childLetter={letterBlock?.letters[0]} letterBlocks={letterBlocks}
                                     swappedLetterState={swappedLetterState} >
                                     {letterBlock != undefined && letter != undefined &&
-                                        <LetterBlock key={letterBlock.id} id={letterBlock.id} letters={letterBlock.letters} currCell={i}
+                                        <LetterBlock key={letterBlock.id} id={letterBlock.id} letters={letterBlock.letters}
                                             onPointerDown={handleLetterBlockDown} onPointerUp={handlePointerUp}
                                             onPointerEnter={handleLetterBlockEnter}
 
@@ -192,7 +192,7 @@ export default function Board({config, roomCode, gameId}: BoardProps) {
                                             isPointerOver={pointerOver === i}
                                             blocksSelected={selectedLetters}
 
-                                            dragMode={dragMode}
+                                            dragMode={dragMode} currCell={i}
                                             onEnd={clearSwappedLetterState}
                                         />
                                     }

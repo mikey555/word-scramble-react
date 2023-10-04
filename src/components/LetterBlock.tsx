@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import useCustomDrag, { DragMode } from "./useDrag.tsx";
 import { useDrag } from "react-dnd";
 import { LetterDieSchema } from "~/server/diceManager.tsx";
+import useReparentAnimation from "./hooks/useReparentAnim.tsx";
 
 export interface LetterBlockProps {
     id: number,
@@ -16,6 +17,7 @@ export interface LetterBlockProps {
     blocksSelected: number[];
     dragMode: DragMode;
     onEnd: () => void;
+
 }
 
 export interface DraggedLetter extends LetterDieSchema {
@@ -28,7 +30,6 @@ export function LetterBlock({
 }: LetterBlockProps) {
     const [translate, setTranslate] = useState({ x: 0, y: 0 });
     const eventTargetRef = useRef<HTMLDivElement>(null);
-
     const [{ isDragging }, drag] = useDrag(() => ({
         type: 'letter',
         item: { id: id, letters: letters, currCell: currCell } as DraggedLetter,
@@ -40,6 +41,8 @@ export function LetterBlock({
             onEnd()
         }
     }));
+
+    const isAnimating = useReparentAnimation(eventTargetRef, isDragging, currCell);
 
     const handlePointerUp = (e: PointerEvent) => {
         setTranslate({
@@ -59,6 +62,7 @@ export function LetterBlock({
     };
 
     const handleDrag = (e: PointerEvent) => {
+        // console.log(`x: ${eventTargetRef.current?.getBoundingClientRect().x}, y: ${eventTargetRef.current?.getBoundingClientRect().y}`)
         setTranslate({
             x: translate.x + e.movementX,
             y: translate.y + e.movementY
@@ -81,16 +85,18 @@ export function LetterBlock({
         zIndex: `${customDrag.isDragging ? 10 : 0}`
     }
 
+
+
     return (
         <div id={`letter-block-${id}`} data-current-cell={currCell}
             ref={drag}
             className={`border border-gray-400 letter-block flex justify-center items-center select-none ${isDragging ? 'hidden' : ''} ${isSelected ? 'isSelected' : ''}`}
                 style={style}>
-            {/* <div ref={eventTargetRef}> */}
+            <div ref={eventTargetRef}>
                 {/* <div ref={divRef}> */}
                     {letters?.[0]?.toUpperCase()}
                 {/* </div> */}
-            {/* </div> */}
+            </div>
         </div>
     );
 }

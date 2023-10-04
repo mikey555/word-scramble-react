@@ -40,7 +40,7 @@ export const useCustomDrag = (ref: RefObject<HTMLDivElement | EventTarget>, deps
 
                 break;
             case 'DragNDrop':
-                console.log(`pointerdown pointerId: ${e.pointerId}`)
+
                 setIsDragging(true);
                 break;
             default:

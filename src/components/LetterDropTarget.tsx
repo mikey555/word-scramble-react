@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 import { LetterDieSchema } from "~/server/diceManager";
 import { DraggedLetter } from "./LetterBlock";
-import { SwappedLetterState } from "./Board.tsx";
+import { SwappedLetterState } from "./Board";
 
 interface LetterDropTargetType {
     cellId: number,
