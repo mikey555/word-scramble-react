@@ -1,20 +1,23 @@
-import type { VercelKV } from "@vercel/kv";
+import type {VercelKV} from "@vercel/kv";
 import type {createClient} from "redis";
 import {
-    type PlayerInfo,
+    type ConfirmedWord,
+    confirmedWordsSchema,
     type GameInfo,
+    gameInfoSchema,
     type GameInfoUpdate,
-    type Score,
+    type PlayerInfo,
     type RoomInfo,
-    type ConfirmedWord, roomInfoSchema, confirmedWordsSchema, gameInfoSchema
+    roomInfoSchema,
+    type Score
 } from "~/components/Types";
-import {generateRandomString} from "~/server/helpers.tsx";
-import { uniqueId } from "~/utils/helpers";
-import {BoggleDice, rollAndShuffleDice, rollDice} from "../diceManager";
+import {uniqueId} from "~/utils/helpers";
+import {rollDice} from "../diceManager";
 import advanceGameState from "~/server/api/gameState.tsx";
 import _ from "lodash";
 import Redlock, {ResourceLockedError} from "redlock";
 import type Redis from "ioredis";
+import {generateGameInfo, generateRoomCode, getGameInfoKey} from "~/server/gameInfoMethods.tsx";
 
 const RedisObjects = {
     ActiveRoomsSet: 'ActiveRoomsSet',
@@ -25,10 +28,6 @@ const RedisObjects = {
 
 export type LocalRedis = ReturnType<typeof createClient>;
 export type BoggleRedisType = LocalRedis | VercelKV;
-
-function getGameInfoKey(roomCode: string) {
-    return `room:${roomCode}:gameInfo`;
-}
 
 function getRoomInfoKey(roomCode: string) {
     return `room:${roomCode}`;
@@ -69,25 +68,7 @@ export class RedisBoggleCommands {
     }
 
     async createGameInfo(gameId: string, roomCode: string, playersOrdered: { userId: string, playerName: string }[]) {
-        const key = getGameInfoKey(roomCode);
-        const newBoard = rollAndShuffleDice(BoggleDice);
-        const newScores: Score[] = playersOrdered.map(p => {
-            return { userId: p.userId, score: 0 };
-        })
-        const gameInfo = {
-            state: {
-                round: 0,
-                board: newBoard,
-                isGameFinished: false,
-            },
-            prevState: null,
-            scores: newScores,
-            words: undefined,
-            gameId: gameId,
-            roomCode: roomCode,
-            dateTimeStarted: Date.now(),
-            timeLastRoundOver: null
-        } satisfies GameInfo;
+        const {key, gameInfo} = generateGameInfo(roomCode, playersOrdered, gameId);
         const gameAdded = await this.redis.call("JSON.SET", key, '$', JSON.stringify(gameInfo));
         if (!gameAdded) throw new Error(`Game ${gameId} failed to initialize`);
         return gameInfo;
@@ -131,10 +112,10 @@ export class RedisBoggleCommands {
         return gameId;
     }
 
-    async createRoomCode() {
+    async createRoom() {
         let roomCode: string | undefined;
         while (roomCode == undefined) {
-            roomCode = generateRandomString(4);
+            roomCode = generateRoomCode(4);
             const roomCodeActive = await this.isRoomCodeActive(roomCode);
             if (roomCodeActive) continue;
 
