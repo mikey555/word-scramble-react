@@ -56,7 +56,7 @@ export function rollDice(board: BoardConfiguration, cellsToRoll?: number[]) {
     return board;
 }
 
-function rollDie(die: BoardLetterDie) {
+export function rollDie(die: BoardLetterDie) {
     die.letterBlock.letters = shuffleString(die.letterBlock.letters);
     die.letterBlock.numTimesRolled += 1;
 }
