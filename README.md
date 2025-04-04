@@ -8,6 +8,8 @@ Try it out at https://word-scramble-react.vercel.app/
 
 ![image](https://github.com/user-attachments/assets/335d82b6-2351-4046-bbb0-fd152fa11e99)
 
+https://github.com/user-attachments/assets/d59dc31d-4f86-47cb-ba87-3c79ad6bdbe2
+
 ## Rules
 <ul>
   <li>Find the longest word you can within 60 seconds.</li>
