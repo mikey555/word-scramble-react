@@ -49,7 +49,7 @@ const LetterDropTarget = forwardRef<HTMLDivElement, LetterDropTargetType>(
         }
 
         return (
-            <div ref={dropRef} id={`letter-drop-target-${cellId.toString()}`}
+            <div /*ref={dropRef}*/ id={`letter-drop-target-${cellId.toString()}`}
                 style={{
                     width: '50px', height: '50px'
                 }}

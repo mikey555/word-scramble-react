@@ -24,7 +24,7 @@ export const lobbyRouter = createTRPCRouter({
       }
       let roomCode;
       try {
-        roomCode = await redis.createRoomCode();
+        roomCode = await redis.createRoom();
         await redis.createRoomInfo(roomCode, playerInfo);
       } catch (e) {
         throw new Error(UNKNOWN_ERROR_MESSAGE);
