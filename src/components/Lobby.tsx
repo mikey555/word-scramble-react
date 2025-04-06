@@ -93,7 +93,7 @@ export default function Lobby({ userId, onSetSessionInfo }: LobbyProps) {
         return (
             <div className="max-w-lg rounded-lg shadow-md bg-white p-6 space-y-6 border-gray-400 dark:border-gray-700">
                 <div id="lobby" className="flex flex-col items-center m-3 space-y-6 w-80">
-                    <h1 className="text-2xl">Big Words</h1>
+                    <h1 className="text-2xl">lil word game</h1>
                     {gameId == undefined &&
                         <>
                             <div>Compete with up to 4 players to find the longest word.</div>
