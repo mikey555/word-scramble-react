@@ -102,12 +102,7 @@ export default function GameManager({ gameId, roomCode, playersOrdered,
         setLatestWordSubmission(null);
         setTimeLastRoundOver(result.timeLastRoundOver);
         setScores(result.scores);
-        if (result.state.isGameFinished) {
-            setGameState(result.state);
-            setRoundState(RoundState.GameFinished);
-        } else {
-            setRoundState(RoundState.Intermission);
-        }
+        setRoundState(RoundState.Intermission);
     })
     function handleBeginWordSelection() {
         let nextState;
@@ -122,7 +117,11 @@ export default function GameManager({ gameId, roomCode, playersOrdered,
         }
         setGameState(nextState);
         setWordSubmissionState(WordSubmissionState.NotSubmitted);
-        setRoundState(RoundState.WordSelection);
+        if (nextState.isGameFinished) {
+            setRoundState(RoundState.GameFinished);
+        } else {
+            setRoundState(RoundState.WordSelection);
+        }
         setLatestBeginIntermissionMessage(null);
     }
 
