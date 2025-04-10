@@ -113,7 +113,7 @@ export function LetterBlock({
     return (
         <AnimatePresence>
             <motion.div id={`letter-block-${id}`} data-letter={prevLetters[0]}
-                className={clsx('border letter-block select-none w-[60px] h-[60px] m-1 rounded-lg font-bold')}
+                className={clsx('border letter-block select-none w-[60px] h-[60px] m-1.5 rounded-lg font-bold')}
                 variants={variants} animate={animationState} exit={{scale: 0}} initial={{scale: 0}}
                 transition={transition} style={style} //ref={transformAnimScope}
             >
