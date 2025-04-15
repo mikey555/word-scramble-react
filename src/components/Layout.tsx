@@ -17,13 +17,11 @@ export const lexend = Lexend({
 export default function Layout({ children }: LayoutProps) {
     return (
         <>
+            <SpeedInsights/>
             <Head>
-                <title>WORDS WORDS WORDS</title>
-                <meta name="description" content="A word game-in-progress" />
-                <link rel="icon" href="/favicon.ico" />
+                <title>lil word game - multiplayer word search</title>
                 <meta name="viewport" content="initial-scale=1, width=device-width"/>
             </Head>
-            <SpeedInsights/>
             <main
                 className={cn("bg-gray-100 min-h-svh flex items-center justify-center touch-none text-base text-center", lexend.className)}>
                     {children}

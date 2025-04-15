@@ -11,10 +11,11 @@ import {
 import {DialogClose} from "@radix-ui/react-dialog";
 
 export function RulesDialog() {
+    const buttonText = "Rules"
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="ghost">Rules</Button>
+                <Button variant="outline">{buttonText}</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

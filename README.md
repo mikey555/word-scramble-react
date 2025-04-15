@@ -1,8 +1,8 @@
-# Big Words
+# lil word game
 
 Compete with up to 4 players to find the longest word.
 
-Try it out at https://word-scramble-react.vercel.app/
+Try it out at https://www.lilwordgame.com/
 
 ![image](https://github.com/user-attachments/assets/bff974b6-b4f0-4566-a50a-bb1d2869c88d)
 

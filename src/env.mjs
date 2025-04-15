@@ -29,6 +29,8 @@ export const env = createEnv({
     NEXT_PUBLIC_MAX_NUM_PLAYERS_PER_ROOM: z.coerce.number().min(1),
     NEXT_PUBLIC_ROUND_DURATION: z.coerce.number().min(1),
     NEXT_PUBLIC_INTERMISSION_DURATION: z.coerce.number().min(1),
+    NEXT_PUBLIC_VERCEL_URL: z.coerce.string().min(1),
+    NEXT_PUBLIC_SITE_URL: z.coerce.string().min(1),
   },
 
   /**
@@ -49,6 +51,8 @@ export const env = createEnv({
     NEXT_PUBLIC_MAX_NUM_PLAYERS_PER_ROOM: process.env.NEXT_PUBLIC_MAX_NUM_PLAYERS_PER_ROOM,
     NEXT_PUBLIC_ROUND_DURATION: process.env.NEXT_PUBLIC_ROUND_DURATION,
     NEXT_PUBLIC_INTERMISSION_DURATION: process.env.NEXT_PUBLIC_INTERMISSION_DURATION,
+    NEXT_PUBLIC_VERCEL_URL: process.env.NEXT_PUBLIC_VERCEL_URL,
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
