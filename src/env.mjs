@@ -15,6 +15,9 @@ export const env = createEnv({
     KV_URL_DEV: z.string().min(5),
     KV_URL_PREVIEW: z.string().min(5),
     KV_URL_PROD: z.string().min(5),
+    UPSTASH_REDIS_REST_URL: z.string().min(5),
+    UPSTASH_REDIS_REST_TOKEN: z.string().min(5),
+    UPSTASH_REDIS_HOST: z.string().min(5),
   },
 
   /**
@@ -54,6 +57,9 @@ export const env = createEnv({
     NEXT_PUBLIC_VERCEL_URL: process.env.NEXT_PUBLIC_VERCEL_URL,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+    UPSTASH_REDIS_HOST: process.env.UPSTASH_REDIS_HOST,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
