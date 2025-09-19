@@ -36,7 +36,6 @@ type CreateContextOptions = Record<string, never>;
  */
 const createInnerTRPCContext = (_opts: CreateContextOptions) => {
   const ably = createAblyClient();
-  let KV_URL: string;
   /*let KV_URL: string;
   switch (env.VERCEL_ENV) {
     case "production":
@@ -48,8 +47,6 @@ const createInnerTRPCContext = (_opts: CreateContextOptions) => {
     default:
       KV_URL = env.KV_URL_DEV;
       break;
-  }
-  const redis = new RedisBoggleCommands(new Redis(KV_URL));
   }*/
   const client = new Redis({
     port: 6379, // Redis port
