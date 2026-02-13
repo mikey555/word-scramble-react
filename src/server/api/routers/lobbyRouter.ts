@@ -7,7 +7,6 @@ import shuffleArrayCopy from "~/components/helpers";
 import { simplePlayerInfoSchema } from "~/components/Types";
 import { MAX_NUM_PLAYERS_PER_ROOM, UNKNOWN_ERROR_MESSAGE } from "~/server/Constants";
 import { isErrorWithMessage } from "~/server/Error";
-import {AnalyticsEventType, trackEvent} from "~/utils/analytics.ts";
 
 export const lobbyRouter = createTRPCRouter({
   hostGame: publicProcedure
@@ -89,13 +88,6 @@ export const lobbyRouter = createTRPCRouter({
           players: playersOrdered
         }
         await channel.publish(AblyMessageType.GameStarted, gameStartedMsg);
-
-        void trackEvent(AnalyticsEventType.GameStarted, {
-          gameId: game.gameId,
-          roomCode: roomCode,
-          dateTimeStarted: gameStartedMsg.dateTimePublished,
-        });
-
         return {};
       } catch (e) {
         throw new Error(UNKNOWN_ERROR_MESSAGE);
