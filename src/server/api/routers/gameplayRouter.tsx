@@ -1,13 +1,11 @@
 import {z} from "zod";
-import {
-    AblyMessageType,
-    type BeginIntermissionMessageData,
-    type WordSubmissionResponse
-} from "~/components/Types";
+import {AblyMessageType, type BeginIntermissionMessageData, type WordSubmissionResponse} from "~/components/Types";
 import {ablyChannelName} from "~/server/ably/ablyHelpers";
 import {createTRPCRouter, publicProcedure} from "../trpc";
 import {getWordFromCellIds} from "~/lib/helpers.tsx";
 import {MIN_WORD_LENGTH} from "~/components/Constants.tsx";
+import {AnalyticsEventType, trackEvent} from "~/utils/analytics.ts";
+import {input} from "framer-motion/m";
 
 export const gameplayRouter = createTRPCRouter({
 
@@ -55,6 +53,15 @@ export const gameplayRouter = createTRPCRouter({
                 throw new Error(`Too many confirmed words for number of players: ${players.length} players, ${confirmedWords.length} confirmed words`);
             }
 
+            void trackEvent(AnalyticsEventType.WordConfirmed, {
+                word: word,
+                score: score,
+                gameId: game.gameId,
+                roomCode: roomCode,
+                userId: userId,
+                round: game.state.round,
+            });
+
             // all players have confirmed
             return {
                 areAllWordsConfirmed: confirmedWords.length === players.length,
@@ -99,6 +106,14 @@ export const gameplayRouter = createTRPCRouter({
                     timeLastRoundOver: processEndOfRound.timeRoundOver,
                 }
                 await channel.publish(AblyMessageType.BeginIntermission, endOfRoundMsg);
+
+                void trackEvent(AnalyticsEventType.RoundEnded, {
+                    dateTimeEnded: endOfRoundMsg.dateTimePublished,
+                    gameId: opts.input.gameId,
+                    round: opts.input.round,
+                    roomCode: opts.input.roomCode,
+                });
+
                 return {
                     success: true,
                 };

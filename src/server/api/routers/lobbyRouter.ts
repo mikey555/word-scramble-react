@@ -7,6 +7,7 @@ import shuffleArrayCopy from "~/components/helpers";
 import { simplePlayerInfoSchema } from "~/components/Types";
 import { MAX_NUM_PLAYERS_PER_ROOM, UNKNOWN_ERROR_MESSAGE } from "~/server/Constants";
 import { isErrorWithMessage } from "~/server/Error";
+import {AnalyticsEventType, trackEvent} from "~/utils/analytics.ts";
 
 export const lobbyRouter = createTRPCRouter({
   hostGame: publicProcedure
