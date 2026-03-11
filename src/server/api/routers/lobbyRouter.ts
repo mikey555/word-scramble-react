@@ -88,6 +88,14 @@ export const lobbyRouter = createTRPCRouter({
           players: playersOrdered
         }
         await channel.publish(AblyMessageType.GameStarted, gameStartedMsg);
+
+        void trackEvent(AnalyticsEventType.GameStarted, {
+          gameId: game.gameId,
+          userId: userId,
+          roomCode: roomCode,
+          dateTimeStarted: gameStartedMsg.dateTimePublished,
+        });
+
         return {};
       } catch (e) {
         throw new Error(UNKNOWN_ERROR_MESSAGE);
