@@ -56,9 +56,9 @@ export const gameplayRouter = createTRPCRouter({
             void trackEvent(AnalyticsEventType.WordConfirmed, {
                 word: word,
                 score: score,
-                gameId: game.gameId,
-                roomCode: roomCode,
-                userId: userId,
+                game_id: game.gameId,
+                room_code: roomCode,
+                user_id: userId,
                 round: game.state.round,
             });
 
@@ -106,13 +106,6 @@ export const gameplayRouter = createTRPCRouter({
                     timeLastRoundOver: processEndOfRound.timeRoundOver,
                 }
                 await channel.publish(AblyMessageType.BeginIntermission, endOfRoundMsg);
-
-                void trackEvent(AnalyticsEventType.RoundEnded, {
-                    dateTimeEnded: endOfRoundMsg.dateTimePublished,
-                    gameId: opts.input.gameId,
-                    round: opts.input.round,
-                    roomCode: opts.input.roomCode,
-                });
 
                 return {
                     success: true,

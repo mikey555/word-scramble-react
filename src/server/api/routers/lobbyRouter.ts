@@ -91,10 +91,10 @@ export const lobbyRouter = createTRPCRouter({
         await channel.publish(AblyMessageType.GameStarted, gameStartedMsg);
 
         void trackEvent(AnalyticsEventType.GameStarted, {
-          gameId: game.gameId,
-          userId: userId,
-          roomCode: roomCode,
-          dateTimeStarted: gameStartedMsg.dateTimePublished,
+          game_id: game.gameId,
+          user_id: userId,
+          room_code: roomCode,
+          date_time_started: gameStartedMsg.dateTimePublished,
         });
 
         return {};
