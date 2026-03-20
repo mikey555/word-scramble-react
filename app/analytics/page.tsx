@@ -5,6 +5,8 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { fromCognitoIdentityPool } from '@aws-sdk/credential-providers';
 import "~/styles/globals.css";
+import {cn} from "~/lib/utils.ts";
+import {lexend} from "~/components/Layout.tsx";
 
 
 const IDENTITY_POOL_ID = 'us-east-1:5ad039b8-b53e-4d91-9e17-23ef304f4146';
@@ -79,7 +81,7 @@ export default function AnalyticsPage() {
     const uniquePlayers = new Set(stats.map(s => s.user_id)).size;
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className={cn("bg-gray-50 min-h-svh flex items-center justify-center touch-none text-base text-center", lexend.className)}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 {/* Header */}
                 <div className="mb-8">
