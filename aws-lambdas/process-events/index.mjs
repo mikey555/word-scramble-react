@@ -1,12 +1,13 @@
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, UpdateCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 
 const s3Client = new S3Client({ region: "us-east-1" });
 const dynamoClient = new DynamoDBClient({ region: "us-east-1" });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
-const TABLE_NAME = "lilwordgame-player-stats";
+const PLAYER_STATS_TABLE = "lilwordgame-player-stats";
+const GAME_STATS_TABLE = "lilwordgame-game-stats";
 
 export const handler = async (event) => {
     console.log("Processing S3 event:", JSON.stringify(event, null, 2));
@@ -38,10 +39,30 @@ export const handler = async (event) => {
 };
 
 async function processEvent(eventData) {
+    const { event_type } = eventData;
+
+    // Route to appropriate processor based on event type
+    switch (event_type) {
+        case 'GameStarted':
+            await processPlayerEvent(eventData);
+            break;
+        case 'WordConfirmed':
+            await processPlayerEvent(eventData);
+            break;
+        case 'GameEnded':
+            await processGameEvent(eventData);
+            break;
+        default:
+            console.log(`Unknown event type: ${event_type}`);
+    }
+}
+
+// Process events that update player stats (aggregated by user_id + date)
+async function processPlayerEvent(eventData) {
     const { event_type, user_id, timestamp } = eventData;
 
     if (!user_id) {
-        console.log("No user_id, skipping");
+        console.log("No user_id, skipping player event");
         return;
     }
 
@@ -64,16 +85,37 @@ async function processEvent(eventData) {
     await updatePlayerStats(user_id, date, stats);
 }
 
+// TODO: use stat_date consistently in codebase
+// Process events that create game records (stored by game_id)
+async function processGameEvent(eventData) {
+    const { game_id, stat_date } = eventData;
+
+    if (!game_id) {
+        console.log("No game_id, skipping game event");
+        return;
+    }
+
+    // Extract game stats from RoundEnded event
+    const gameStats = {
+        game_id,
+        stat_date,
+        scored_words: eventData.scored_words, // Array of { word: string, score: number }
+        game_started_at: eventData.game_started_at,
+    };
+
+    await saveGameStats(gameStats);
+}
+
 async function getPlayerStats(user_id, stat_date) {
     try {
         const response = await docClient.send(new GetCommand({
-            TableName: TABLE_NAME,
+            TableName: PLAYER_STATS_TABLE,
             Key: { user_id, stat_date }
         }));
 
         return response.Item || { user_id, stat_date };
     } catch (error) {
-        console.error("Error getting stats:", error);
+        console.error("Error getting player stats:", error);
         return { user_id, stat_date };
     }
 }
@@ -81,7 +123,7 @@ async function getPlayerStats(user_id, stat_date) {
 async function updatePlayerStats(user_id, stat_date, stats) {
     try {
         await docClient.send(new UpdateCommand({
-            TableName: TABLE_NAME,
+            TableName: PLAYER_STATS_TABLE,
             Key: { user_id, stat_date },
             UpdateExpression: "SET games_started = :gs, words_confirmed = :wc, total_score = :ts, last_updated = :lu",
             ExpressionAttributeValues: {
@@ -92,9 +134,23 @@ async function updatePlayerStats(user_id, stat_date, stats) {
             }
         }));
 
-        console.log(`Updated stats for ${user_id} on ${stat_date}`);
+        console.log(`Updated player stats for ${user_id} on ${stat_date}`);
     } catch (error) {
-        console.error("Error updating stats:", error);
+        console.error("Error updating player stats:", error);
+        throw error;
+    }
+}
+
+async function saveGameStats(gameStats) {
+    try {
+        await docClient.send(new PutCommand({
+            TableName: GAME_STATS_TABLE,
+            Item: gameStats
+        }));
+
+        console.log(`Saved game stats for game ${gameStats.game_id}`);
+    } catch (error) {
+        console.error("Error saving game stats:", error);
         throw error;
     }
 }

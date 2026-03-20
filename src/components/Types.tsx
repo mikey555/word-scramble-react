@@ -47,18 +47,16 @@ export type Score = {
     score: number
 }
 
-export interface GameInfo {
-    state: GameState,
-    prevState: GameState | null,
-    scores: Score[],
-    words?: undefined,
-    gameId: string,
-    roomCode: string,
-    dateTimeStarted: number,
-    timeLastRoundOver: number | null,
+export type ScoredWords = {
+    userId: string,
+    score: number,
+    round: number,
+    word: string
 }
 
-export type GameInfoUpdate = Partial<Pick<GameInfo, 'state' | 'prevState' | 'scores' | 'timeLastRoundOver'>>;
+export type GameInfo = z.infer<typeof gameInfoSchema>;
+
+export type GameInfoUpdate = Partial<Pick<GameInfo, 'state' | 'prevState' | 'scores' | 'scoredWords' | 'timeLastRoundOver'>>;
 
 export type GameState = {
     round: number;
@@ -164,14 +162,21 @@ export const confirmedWordSchema = z.object({
     score: z.number(),
     sourceCellIds: z.array(z.number()),
 });
-
 export const confirmedWordsSchema = z.array(confirmedWordSchema);
+
+export const scoredWordSchema = z.object({
+    userId: z.string(),
+    word: z.string(),
+    score: z.number(),
+    round: z.number(),
+});
+export type ScoreWord = z.infer<typeof scoreSchema>;
 
 export const gameInfoSchema = z.object({
     state: gameStateSchema,
     prevState: gameStateSchema.nullable(),
     scores: z.array(scoreSchema),
-    words: z.undefined(),
+    scoredWords: z.array(scoredWordSchema),
     gameId: z.string(),
     roomCode: z.string(),
     dateTimeStarted: z.number(),

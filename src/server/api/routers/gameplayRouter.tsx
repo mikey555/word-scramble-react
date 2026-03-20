@@ -3,7 +3,7 @@ import {AblyMessageType, type BeginIntermissionMessageData, type WordSubmissionR
 import {ablyChannelName} from "~/server/ably/ablyHelpers";
 import {createTRPCRouter, publicProcedure} from "../trpc";
 import {getWordFromCellIds} from "~/lib/helpers.tsx";
-import {MIN_WORD_LENGTH} from "~/components/Constants.tsx";
+import {MIN_WORD_LENGTH, NUM_ROUNDS_PER_GAME} from "~/components/Constants.tsx";
 import {AnalyticsEventType, trackEvent} from "~/utils/analytics.ts";
 import {input} from "framer-motion/m";
 
@@ -96,6 +96,10 @@ export const gameplayRouter = createTRPCRouter({
             // will be undefined for all but one player
             const processEndOfRound = await redis.processEndOfRound(opts.input.round, roomCode, userId, opts.input.gameId);
             if (processEndOfRound != undefined) {
+
+                const gameInfo = await redis.fetchGameInfo(roomCode, userId);
+
+
                 const endOfRoundMsg: BeginIntermissionMessageData = {
                     dateTimePublished: Date.now(),
                     messageType: AblyMessageType.BeginIntermission,
@@ -107,6 +111,16 @@ export const gameplayRouter = createTRPCRouter({
                 }
                 await channel.publish(AblyMessageType.BeginIntermission, endOfRoundMsg);
 
+                // track event on end of game
+                if (gameInfo.state.isGameFinished) {
+                    const timestamp = new Date().toISOString();
+                    void trackEvent(AnalyticsEventType.GameEnded, {
+                        game_id: opts.input.gameId,
+                        scored_words: gameInfo.scoredWords,
+                        game_started_at: gameInfo.dateTimeStarted,
+                        stat_date: timestamp,
+                    });
+                }
                 return {
                     success: true,
                 };

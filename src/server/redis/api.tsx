@@ -9,7 +9,7 @@ import {
     type PlayerInfo,
     type RoomInfo,
     roomInfoSchema,
-    type Score
+    type Score, ScoredWords
 } from "~/components/Types";
 import {uniqueId} from "~/utils/helpers";
 import {rollDice} from "../diceManager";
@@ -17,7 +17,12 @@ import advanceGameState from "~/server/api/gameState.tsx";
 import _ from "lodash";
 import Redlock, {ResourceLockedError} from "redlock";
 import type Redis from "ioredis";
-import {generateGameInfo, generateRoomCode, getGameInfoKey} from "~/server/gameInfoMethods.tsx";
+import {
+    getConfirmedWordsRedisKey,
+    generateGameInfo,
+    generateRoomCode,
+    getGameInfoKey
+} from "~/server/gameInfoMethods.tsx";
 
 const RedisObjects = {
     ActiveRoomsSet: 'ActiveRoomsSet',
@@ -86,7 +91,7 @@ export class RedisBoggleCommands {
         return info;
     }
 
-    async fetchGameInfo(roomCode: string, userId: string) {
+    async fetchGameInfo(roomCode: string, userId: string) : Promise<GameInfo> {
         if (roomCode.length != 4) throw new Error('roomCode.length != 4')
         const players = await this.getPlayers(roomCode);
         if (!players.some(p => p.userId === userId)) throw new Error(`userId ${userId} not part of room ${roomCode}`);
@@ -175,14 +180,14 @@ export class RedisBoggleCommands {
 
     async addConfirmedWord(gameId: string, userId: string, word: string, sourceCellIds: number[], score: number,
                            round: number) {
-        const key = `game:${gameId}:round:${round}:words`;
+        const key = getConfirmedWordsRedisKey(gameId, round);
         const confirmedWord: ConfirmedWord = {
             userId: userId,
             word: word,
             score: score,
             sourceCellIds: sourceCellIds,
         };
-        const confirmedWords = await this.getConfirmedWords(key);
+        const confirmedWords = await this.getConfirmedWords(gameId, round);
         if (confirmedWords.some(x => x.userId === userId)) {
             throw new Error(`User ${userId} already has confirmed word in gameId ${gameId}`);
         }
@@ -192,11 +197,12 @@ export class RedisBoggleCommands {
         return confirmedWords;
     }
 
-    async getConfirmedWords(key: string) {
-        const confirmedWords = await this.redis.call('json.get', key);
+    async getConfirmedWords(gameId: string, round: number) {
+        const redisKey = getConfirmedWordsRedisKey(gameId, round);
+        const confirmedWords = await this.redis.call('json.get', redisKey);
         console.log(`confirmedWords: ${JSON.stringify(confirmedWords)}`);
         if (confirmedWords == null) return [];
-        if (typeof confirmedWords !== 'string' ) throw new Error(`${key} is not a string`);
+        if (typeof confirmedWords !== 'string' ) throw new Error(`${redisKey} is not a string`);
         const result = confirmedWordsSchema.safeParse(JSON.parse(confirmedWords));
         if (result.success) {
             return result.data;
@@ -218,14 +224,14 @@ export class RedisBoggleCommands {
             console.error(error);
         });
 
-        const confirmedWordsKey = `game:${gameId}:round:${round}:words`;
+        const confirmedWordsThisRoundRedisKey = getConfirmedWordsRedisKey(gameId, round);
         const gameInfoKey = getGameInfoKey(roomCode);
-        const confirmedWordsResourceKey = `redlock:${confirmedWordsKey}`;
+        const confirmedWordsThisRoundResourceKey = `redlock:${confirmedWordsThisRoundRedisKey}`;
         const gameInfoResourceKey = `redlock:${gameInfoKey}`;
 
-        return await redlock.using([confirmedWordsResourceKey, gameInfoResourceKey], 5000, async (signal) => {
+        return await redlock.using([confirmedWordsThisRoundResourceKey, gameInfoResourceKey], 5000, async (signal) => {
             console.log('acquired lock')
-            const confirmedWords = await this.getConfirmedWords(confirmedWordsKey);
+            const confirmedWords = await this.getConfirmedWords(gameId, round);
             if (signal.aborted) throw signal.error;
             console.log('got confirmed words')
             const game = await this.fetchGameInfo(roomCode, userId);
@@ -247,6 +253,14 @@ export class RedisBoggleCommands {
                     return score;
                 }
             });
+
+            const newScoredWords: ScoredWords[] = confirmedWords.map((word) => ({
+                userId: word.userId,
+                round: round,
+                word: word.word,
+                score: word.score
+            }))
+
             game.prevState = _.cloneDeep(game.state); // TODO: need to clone
             game.state.board = rollDice(game.state.board);
             advanceGameState(game.state);
@@ -254,9 +268,11 @@ export class RedisBoggleCommands {
                 prevState: game.prevState,
                 state: game.state,
                 scores: updatedScores,
+                scoredWords: [...game.scoredWords, ...newScoredWords],
                 timeLastRoundOver: Date.now(),
             }
             const updatedGameInfo = await this.updateGameInfo(game.gameId, roomCode, gameInfoUpdate, userId, game);
+
             if (signal.aborted) throw signal.error;
             console.log('updated gameInfo')
 
@@ -267,6 +283,7 @@ export class RedisBoggleCommands {
                 prevState: updatedGameInfo.prevState,
                 confirmedWords: confirmedWords,
                 scores: updatedGameInfo.scores,
+                scoredWords: newScoredWords,
                 timeRoundOver: updatedGameInfo.timeLastRoundOver,
             };
         });

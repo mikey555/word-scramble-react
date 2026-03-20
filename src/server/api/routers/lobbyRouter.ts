@@ -92,7 +92,7 @@ export const lobbyRouter = createTRPCRouter({
 
         void trackEvent(AnalyticsEventType.GameStarted, {
           game_id: game.gameId,
-          user_id: userId,
+          hosted_by: userId,
           room_code: roomCode,
           date_time_started: gameStartedMsg.dateTimePublished,
         });

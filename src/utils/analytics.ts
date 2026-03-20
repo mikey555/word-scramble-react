@@ -4,6 +4,7 @@ export enum AnalyticsEventType {
     GameStarted = "GameStarted",
     WordConfirmed = "WordConfirmed",
     RoundEnded = "RoundEnded",
+    GameEnded = "GameEnded",
 
 }
 

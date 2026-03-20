@@ -23,7 +23,7 @@ export function generateGameInfo(roomCode: string, playersOrdered: {
         },
         prevState: null,
         scores: newScores,
-        words: undefined,
+        scoredWords: [],
         gameId: gameId,
         roomCode: roomCode,
         dateTimeStarted: Date.now(),
@@ -42,4 +42,8 @@ export function generateRoomCode(length = 4): string {
         return generateRoomCode(length);
     }
     return result;
+}
+
+export function getConfirmedWordsRedisKey(gameId: string, round: number) {
+    return `game:${gameId}:round:${round}:words`
 }
