@@ -118,7 +118,7 @@ export const gameplayRouter = createTRPCRouter({
                         game_id: opts.input.gameId,
                         scored_words: gameInfo.scoredWords,
                         game_started_at: gameInfo.dateTimeStarted,
-                        stat_date: timestamp,
+                        game_ended_at: timestamp
                     });
                 }
                 return {

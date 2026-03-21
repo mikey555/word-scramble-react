@@ -85,21 +85,19 @@ async function processPlayerEvent(eventData) {
     await updatePlayerStats(user_id, date, stats);
 }
 
-// TODO: use stat_date consistently in codebase
 // Process events that create game records (stored by game_id)
 async function processGameEvent(eventData) {
-    const { game_id, stat_date } = eventData;
+    const { game_id, game_ended_at } = eventData;
 
     if (!game_id) {
         console.log("No game_id, skipping game event");
         return;
     }
 
-    // Extract game stats from RoundEnded event
     const gameStats = {
         game_id,
-        stat_date,
-        scored_words: eventData.scored_words, // Array of { word: string, score: number }
+        stat_date: game_ended_at,
+        scored_words: eventData.scored_words,
         game_started_at: eventData.game_started_at,
     };
 
