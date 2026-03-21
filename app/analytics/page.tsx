@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import React from 'react';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { fromCognitoIdentityPool } from '@aws-sdk/credential-providers';
 import { cn } from '~/lib/utils';
-import {lexend} from "~/components/Layout.tsx";
-import React from "react";
+import { lexend } from "~/components/Layout.tsx";
 import "~/styles/globals.css";
 
 const IDENTITY_POOL_ID = 'us-east-1:5ad039b8-b53e-4d91-9e17-23ef304f4146';
@@ -24,8 +24,10 @@ interface PlayerStats {
 }
 
 interface ScoredWords {
-    word: string;
+    userId: string;
     score: number;
+    round: number;
+    word: string;
 }
 
 interface GameStats {
@@ -43,6 +45,8 @@ export default function AnalyticsPage() {
     const [expandedGame, setExpandedGame] = useState<string | null>(null);
 
     useEffect(() => {
+        void fetchStats();
+
         async function fetchStats() {
             try {
                 const client = new DynamoDBClient({
@@ -78,8 +82,6 @@ export default function AnalyticsPage() {
                 setLoading(false);
             }
         }
-
-        void fetchStats();
     }, []);
 
     if (loading) {
@@ -110,15 +112,44 @@ export default function AnalyticsPage() {
     );
     const topWords = allWords
         .sort((a, b) => b.score - a.score)
-        .slice(0, 5);
+        .slice(0, 10);
 
-    // Calculate top 5 highest scoring games
-    const gamesWithScores = gameStats.map(game => ({
-        ...game,
-        total_score: (game.scored_words || []).reduce((sum, w) => sum + w.score, 0)
-    }));
-    const topGames = gamesWithScores
-        .sort((a, b) => b.total_score - a.total_score)
+    // Calculate top 5 highest scoring players (best single game per player)
+    const playerBestGames = new Map<string, {
+        userId: string;
+        score: number;
+        game_id: string;
+        words: { word: string; score: number }[]
+    }>();
+
+    gameStats.forEach(game => {
+        const playerScores = new Map<string, { total: number; words: { word: string; score: number }[] }>();
+
+        // Calculate each player's score in this game and collect their words
+        (game.scored_words || []).forEach(wordData => {
+            const current = playerScores.get(wordData.userId) || { total: 0, words: [] };
+            current.total += wordData.score;
+            current.words.push({ word: wordData.word, score: wordData.score });
+            playerScores.set(wordData.userId, current);
+        });
+
+        // Check if this is a personal best for any player
+        playerScores.forEach((data, userId) => {
+            const existing = playerBestGames.get(userId);
+
+            if (!existing || data.total > existing.score) {
+                playerBestGames.set(userId, {
+                    userId,
+                    score: data.total,
+                    game_id: game.game_id,
+                    words: data.words
+                });
+            }
+        });
+    });
+
+    const topPlayers = Array.from(playerBestGames.values())
+        .sort((a, b) => b.score - a.score)
         .slice(0, 5);
 
     // Get 10 most recent games
@@ -137,6 +168,30 @@ export default function AnalyticsPage() {
         const ampm = hours >= 12 ? 'pm' : 'am';
         hours = hours % 12 || 12;
         return `${month}/${day}/${year} ${hours}:${minutes}${ampm}`;
+    };
+
+    // Build 2D table for expanded game
+    const buildGameTable = (game: GameStats) => {
+        const words = game.scored_words || [];
+
+        // Get unique players and assign labels
+        const uniqueUserIds = Array.from(new Set(words.map(w => w.userId))).sort();
+        const playerLabels = new Map(uniqueUserIds.map((id, idx) => [id, `Player ${idx + 1}`]));
+
+        // Get max round number
+        const maxRound = Math.max(...words.map(w => w.round), 0);
+
+        // Build data structure: player -> round -> word data
+        const playerData = new Map<string, Map<number, { word: string; score: number }>>();
+
+        words.forEach(w => {
+            if (!playerData.has(w.userId)) {
+                playerData.set(w.userId, new Map());
+            }
+            playerData.get(w.userId)!.set(w.round, { word: w.word, score: w.score });
+        });
+
+        return { playerLabels, maxRound, playerData, uniqueUserIds };
     };
 
     return (
@@ -174,7 +229,7 @@ export default function AnalyticsPage() {
                     />
                 </div>
 
-                {/* Top Words and Top Games */}
+                {/* Top Words and Top Players */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                     {/* Top 5 Highest Scoring Words */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 text-left">
@@ -201,30 +256,35 @@ export default function AnalyticsPage() {
                         </div>
                     </div>
 
-                    {/* Top 5 Highest Scoring Games */}
+                    {/* Top 5 Highest Scoring Players */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 text-left">
                         <div className="px-6 py-4 border-b border-gray-200">
-                            <h2 className="text-lg font-medium text-gray-900">Top Scoring Games</h2>
-                            <p className="mt-1 text-sm text-gray-500">Highest single game scores</p>
+                            <h2 className="text-lg font-medium text-gray-900">Top Scoring Players</h2>
+                            <p className="mt-1 text-sm text-gray-500">Best single-game performances</p>
                         </div>
                         <div className="px-6 py-4">
-                            {topGames.length === 0 ? (
+                            {topPlayers.length === 0 ? (
                                 <p className="text-sm text-gray-500 text-center py-8">No completed games yet</p>
                             ) : (
-                                <div className="space-y-3">
-                                    {topGames.map((game, idx) => (
-                                        <div key={idx} className="py-2 border-b border-gray-100 last:border-0">
-                                            <div className="flex items-center justify-between mb-1">
+                                <div className="space-y-4">
+                                    {topPlayers.map((player, idx) => (
+                                        <div key={idx} className="pb-3 border-b border-gray-100 last:border-0">
+                                            <div className="flex items-center justify-between mb-2">
                                                 <div className="flex items-center space-x-3">
                                                     <span className="text-lg font-semibold text-gray-400 w-6">#{idx + 1}</span>
                                                     <span className="text-sm text-gray-600">
-                            {game.game_id.slice(0, 8)}...
+                            {player.userId.slice(0, 8)}...
                           </span>
                                                 </div>
-                                                <span className="text-lg font-semibold text-gray-900">{game.total_score}</span>
+                                                <span className="text-lg font-semibold text-gray-900">{player.score}</span>
                                             </div>
-                                            <div className="ml-9 text-xs text-gray-500">
-                                                {game.scored_words?.length || 0} words played
+                                            <div className="ml-9 text-xs text-gray-600 space-y-1">
+                                                {player.words.map((w, widx) => (
+                                                    <div key={widx} className="flex justify-between">
+                                                        <span>{w.word}</span>
+                                                        <span className="font-medium">({w.score})</span>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
                                     ))}
@@ -270,6 +330,7 @@ export default function AnalyticsPage() {
                                 recentGames.map((game) => {
                                     const totalScore = (game.scored_words || []).reduce((sum, w) => sum + w.score, 0);
                                     const isExpanded = expandedGame === game.game_id;
+                                    const tableData = buildGameTable(game);
 
                                     return (
                                         <React.Fragment key={game.game_id}>
@@ -291,24 +352,47 @@ export default function AnalyticsPage() {
                                                 <tr>
                                                     <td colSpan={4} className="px-6 py-4 bg-gray-50">
                                                         <div className="overflow-x-auto">
-                                                            <table className="min-w-full text-sm">
+                                                            <table className="min-w-full text-sm border border-gray-300">
                                                                 <thead>
-                                                                <tr className="border-b border-gray-300">
-                                                                    <th className="py-2 px-3 text-left text-xs font-medium text-gray-600">Word</th>
-                                                                    <th className="py-2 px-3 text-right text-xs font-medium text-gray-600">Score</th>
+                                                                <tr className="bg-gray-100">
+                                                                    <th className="py-2 px-3 text-left text-xs font-medium text-gray-700 border-r border-gray-300">
+                                                                        Player
+                                                                    </th>
+                                                                    {Array.from({ length: tableData.maxRound }, (_, i) => i + 1).map(round => (
+                                                                        <th key={round} className="py-2 px-3 text-center text-xs font-medium text-gray-700 border-r border-gray-300">
+                                                                            Round {round}
+                                                                        </th>
+                                                                    ))}
+                                                                    <th className="py-2 px-3 text-center text-xs font-medium text-gray-700 bg-gray-200">
+                                                                        Total
+                                                                    </th>
                                                                 </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                {(game.scored_words || []).map((word, idx) => (
-                                                                    <tr key={idx} className="border-b border-gray-200 last:border-0">
-                                                                        <td className="py-2 px-3 text-gray-900">{word.word}</td>
-                                                                        <td className="py-2 px-3 text-right font-medium text-gray-900">{word.score}</td>
-                                                                    </tr>
-                                                                ))}
-                                                                <tr className="font-semibold border-t-2 border-gray-300">
-                                                                    <td className="py-2 px-3 text-gray-900">Total</td>
-                                                                    <td className="py-2 px-3 text-right text-gray-900">{totalScore}</td>
-                                                                </tr>
+                                                                {tableData.uniqueUserIds.map(userId => {
+                                                                    const playerLabel = tableData.playerLabels.get(userId)!;
+                                                                    const rounds = tableData.playerData.get(userId)!;
+                                                                    const playerTotal = Array.from(rounds.values()).reduce((sum, r) => sum + r.score, 0);
+
+                                                                    return (
+                                                                        <tr key={userId} className="border-t border-gray-300">
+                                                                            <td className="py-2 px-3 font-medium text-gray-900 border-r border-gray-300">
+                                                                                {playerLabel}
+                                                                            </td>
+                                                                            {Array.from({ length: tableData.maxRound }, (_, i) => i + 1).map(round => {
+                                                                                const wordData = rounds.get(round);
+                                                                                return (
+                                                                                    <td key={round} className="py-2 px-3 text-center text-gray-700 border-r border-gray-300">
+                                                                                        {wordData ? `${wordData.word} (${wordData.score})` : '—'}
+                                                                                    </td>
+                                                                                );
+                                                                            })}
+                                                                            <td className="py-2 px-3 text-center font-semibold text-gray-900 bg-gray-100">
+                                                                                {playerTotal}
+                                                                            </td>
+                                                                        </tr>
+                                                                    );
+                                                                })}
                                                                 </tbody>
                                                             </table>
                                                         </div>
