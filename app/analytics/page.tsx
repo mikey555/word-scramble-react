@@ -106,7 +106,7 @@ export default function AnalyticsPage() {
     const uniquePlayers = new Set(playerStats.map(s => s.user_id)).size;
     const avgWordsPerGame = totalGames > 0 ? Math.round(totalWords / totalGames) : 0;
 
-    // Calculate top 5 highest scoring words
+    // Calculate top 10 highest scoring words
     const allWords = gameStats.flatMap(game =>
         (game.scored_words || []).map(w => ({ ...w, game_id: game.game_id }))
     );
@@ -114,7 +114,7 @@ export default function AnalyticsPage() {
         .sort((a, b) => b.score - a.score)
         .slice(0, 10);
 
-    // Calculate top 5 highest scoring players (best single game per player)
+    // Calculate top 10 highest scoring players (best single game per player)
     const playerBestGames = new Map<string, {
         userId: string;
         score: number;
@@ -150,7 +150,7 @@ export default function AnalyticsPage() {
 
     const topPlayers = Array.from(playerBestGames.values())
         .sort((a, b) => b.score - a.score)
-        .slice(0, 5);
+        .slice(0, 10);
 
     // Get 10 most recent games
     const recentGames = [...gameStats]
@@ -199,7 +199,7 @@ export default function AnalyticsPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
                 {/* Header */}
                 <div className="mb-8 text-left">
-                    <h1 className="text-3xl font-semibold text-gray-900">Analytics Dashboard</h1>
+                    <h1 className="text-3xl font-semibold text-gray-900">lil word game analytics dashboard</h1>
                     <p className="mt-2 text-sm text-gray-600">
                         Real-time player activity and engagement metrics
                     </p>
@@ -231,13 +231,13 @@ export default function AnalyticsPage() {
 
                 {/* Top Words and Top Players */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    {/* Top 5 Highest Scoring Words */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 text-left">
-                        <div className="px-6 py-4 border-b border-gray-200">
+                    {/* Top 10 Highest Scoring Words */}
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 text-left flex flex-col h-[400px]">
+                        <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
                             <h2 className="text-lg font-medium text-gray-900">Top Scoring Words</h2>
                             <p className="mt-1 text-sm text-gray-500">Highest individual word scores</p>
                         </div>
-                        <div className="px-6 py-4">
+                        <div className="px-6 py-4 overflow-y-auto flex-grow">
                             {topWords.length === 0 ? (
                                 <p className="text-sm text-gray-500 text-center py-8">No words played yet</p>
                             ) : (
@@ -245,7 +245,7 @@ export default function AnalyticsPage() {
                                     {topWords.map((wordData, idx) => (
                                         <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                                             <div className="flex items-center space-x-3">
-                                                <span className="text-lg font-semibold text-gray-400 w-6">#{idx + 1}</span>
+                                                <span className="text-lg font-semibold text-gray-400 w-8">#{idx + 1}</span>
                                                 <span className="text-base font-medium text-gray-900">{wordData.word}</span>
                                             </div>
                                             <span className="text-lg font-semibold text-gray-900">{wordData.score}</span>
@@ -256,13 +256,13 @@ export default function AnalyticsPage() {
                         </div>
                     </div>
 
-                    {/* Top 5 Highest Scoring Players */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 text-left">
-                        <div className="px-6 py-4 border-b border-gray-200">
+                    {/* Top 10 Highest Scoring Players */}
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 text-left flex flex-col h-[400px]">
+                        <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
                             <h2 className="text-lg font-medium text-gray-900">Top Scoring Players</h2>
                             <p className="mt-1 text-sm text-gray-500">Best single-game performances</p>
                         </div>
-                        <div className="px-6 py-4">
+                        <div className="px-6 py-4 overflow-y-auto flex-grow">
                             {topPlayers.length === 0 ? (
                                 <p className="text-sm text-gray-500 text-center py-8">No completed games yet</p>
                             ) : (
@@ -271,19 +271,23 @@ export default function AnalyticsPage() {
                                         <div key={idx} className="pb-3 border-b border-gray-100 last:border-0">
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className="flex items-center space-x-3">
-                                                    <span className="text-lg font-semibold text-gray-400 w-6">#{idx + 1}</span>
+                                                    <span className="text-lg font-semibold text-gray-400 w-8">#{idx + 1}</span>
                                                     <span className="text-sm text-gray-600">
                             {player.userId.slice(0, 8)}...
                           </span>
                                                 </div>
                                                 <span className="text-lg font-semibold text-gray-900">{player.score}</span>
                                             </div>
-                                            <div className="ml-9 text-xs text-gray-600 space-y-1">
+                                            <div className="ml-11 text-xs text-gray-600 flex flex-wrap items-center gap-x-2">
                                                 {player.words.map((w, widx) => (
-                                                    <div key={widx} className="flex justify-between">
-                                                        <span>{w.word}</span>
-                                                        <span className="font-medium">({w.score})</span>
-                                                    </div>
+                                                    <React.Fragment key={widx}>
+                            <span className="whitespace-nowrap">
+                              {w.word} <span className="font-medium">({w.score})</span>
+                            </span>
+                                                        {widx < player.words.length - 1 && (
+                                                            <span className="text-gray-300">|</span>
+                                                        )}
+                                                    </React.Fragment>
                                                 ))}
                                             </div>
                                         </div>
