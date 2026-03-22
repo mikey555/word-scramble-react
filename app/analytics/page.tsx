@@ -195,7 +195,7 @@ export default function AnalyticsPage() {
     };
 
     return (
-        <div className={cn("bg-gray-50 min-h-svh flex items-center justify-center touch-none text-base text-center", lexend.className)}>
+        <div className={cn("bg-gray-50 min-h-svh flex items-center justify-center text-base text-center", lexend.className)}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
                 {/* Header */}
                 <div className="mb-8 text-left">
