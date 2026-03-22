@@ -111,13 +111,25 @@ export default function Lobby({ userId, onSetSessionInfo }: LobbyProps) {
         return (
             <div className="space-y-6 w-95">
                 <Input className="w-full" onChange={handleNameChange} placeholder="Enter your name" maxLength={12} />
+
+                <Button className="w-full"
+                        disabled={playerName.length < 1 || hostGameMutation.isLoading || sessionInfo != undefined}
+                        onClick={handleHostGame} variant="secondary">
+                    Host a Game <span className="m-5">/</span> Play Solo
+                    {hostGameMutation.isLoading && <Icons.spinner className="h-4 w-4 animate-spin ml-1" />}
+                </Button>
+                <div className="flex items-center space-x-2">
+                    <hr className="flex-grow border-zinc-200" />
+                    <span className="text-zinc-400 text-sm">OR</span>
+                    <hr className="flex-grow border-zinc-200 dark:border-zinc-700" />
+                </div>
                 <div>
                     <form className="w-full inline-flex gap-1" onSubmit={handleJoinGame}>
                         <Input className="w-5/12" onChange={handleRoomCodeInputChange} placeholder="room code" maxLength={4}
-                                    /* inputProps={roomCodeInputProps} */ value={roomCode} /* helperText={joinGame.error?.message} */ />
+                            /* inputProps={roomCodeInputProps} */ value={roomCode} /* helperText={joinGame.error?.message} */ />
                         <Button className="w-7/12 bg-green-500" type="submit"
-                            disabled={roomCode.length !== 4 || hostGameMutation.isLoading || playerName.length < 1}
-                            >
+                                disabled={roomCode.length !== 4 || hostGameMutation.isLoading || playerName.length < 1}
+                        >
                             Join Game
                             {joinGameMutation.isLoading && <Icons.spinner className="h-4 w-4 animate-spin ml-1" />}
                         </Button>
@@ -125,17 +137,6 @@ export default function Lobby({ userId, onSetSessionInfo }: LobbyProps) {
                     {joinGameMutation.isError &&
                         <div className="text-sm text-red-500">{joinGameMutation.error.message}</div>}
                 </div>
-                <div className="flex items-center space-x-2">
-                    <hr className="flex-grow border-zinc-200" />
-                    <span className="text-zinc-400 text-sm">OR</span>
-                    <hr className="flex-grow border-zinc-200 dark:border-zinc-700" />
-                </div>
-                <Button className="w-full"
-                    disabled={playerName.length < 1 || hostGameMutation.isLoading || sessionInfo != undefined}
-                    onClick={handleHostGame} variant="secondary">
-                    Host a Game
-                    {hostGameMutation.isLoading && <Icons.spinner className="h-4 w-4 animate-spin ml-1" />}
-                </Button>
                 {errorMsg != undefined &&
                     <div className="text-sm text-red-500">{errorMsg}</div>
                 }
