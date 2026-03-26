@@ -190,7 +190,6 @@ export default function AnalyticsPage() {
             }
             playerData.get(w.userId)!.set(w.round, { word: w.word, score: w.score });
         });
-
         return { playerLabels, maxRound, playerData, uniqueUserIds };
     };
 
@@ -362,7 +361,7 @@ export default function AnalyticsPage() {
                                                                     <th className="py-2 px-3 text-left text-xs font-medium text-gray-700 border-r border-gray-300">
                                                                         Player
                                                                     </th>
-                                                                    {Array.from({ length: tableData.maxRound }, (_, i) => i + 1).map(round => (
+                                                                    {Array.from({ length: tableData.maxRound+1 }, (_, i) => i + 1).map(round => (
                                                                         <th key={round} className="py-2 px-3 text-center text-xs font-medium text-gray-700 border-r border-gray-300">
                                                                             Round {round}
                                                                         </th>
@@ -377,14 +376,13 @@ export default function AnalyticsPage() {
                                                                     const playerLabel = tableData.playerLabels.get(userId)!;
                                                                     const rounds = tableData.playerData.get(userId)!;
                                                                     const playerTotal = Array.from(rounds.values()).reduce((sum, r) => sum + r.score, 0);
-
                                                                     return (
                                                                         <tr key={userId} className="border-t border-gray-300">
                                                                             <td className="py-2 px-3 font-medium text-gray-900 border-r border-gray-300">
                                                                                 {playerLabel}
                                                                             </td>
-                                                                            {Array.from({ length: tableData.maxRound }, (_, i) => i + 1).map(round => {
-                                                                                const wordData = rounds.get(round);
+                                                                            {Array.from({ length: tableData.maxRound+1 }, (_, i) => i + 1).map(round => {
+                                                                                const wordData = rounds.get(round-1);
                                                                                 return (
                                                                                     <td key={round} className="py-2 px-3 text-center text-gray-700 border-r border-gray-300">
                                                                                         {wordData ? `${wordData.word} (${wordData.score})` : '—'}

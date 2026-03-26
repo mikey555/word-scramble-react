@@ -59,14 +59,14 @@ async function processEvent(eventData) {
 
 // Process events that update player stats (aggregated by user_id + date)
 async function processPlayerEvent(eventData) {
-    const { event_type, user_id, timestamp } = eventData;
+    const { event_type, user_id, stat_date } = eventData;
 
     if (!user_id) {
         console.log("No user_id, skipping player event");
         return;
     }
 
-    const date = timestamp.split('T')[0]; // YYYY-MM-DD
+    const date = stat_date.split('T')[0]; // YYYY-MM-DD
 
     const stats = await getPlayerStats(user_id, date);
 
@@ -87,7 +87,7 @@ async function processPlayerEvent(eventData) {
 
 // Process events that create game records (stored by game_id)
 async function processGameEvent(eventData) {
-    const { game_id, game_ended_at } = eventData;
+    const { game_id, stat_date } = eventData;
 
     if (!game_id) {
         console.log("No game_id, skipping game event");
@@ -96,7 +96,7 @@ async function processGameEvent(eventData) {
 
     const gameStats = {
         game_id,
-        stat_date: game_ended_at,
+        stat_date,
         scored_words: eventData.scored_words,
         game_started_at: eventData.game_started_at,
     };

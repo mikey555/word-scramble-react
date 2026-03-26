@@ -116,9 +116,9 @@ export const gameplayRouter = createTRPCRouter({
                     const timestamp = new Date().toISOString();
                     void trackEvent(AnalyticsEventType.GameEnded, {
                         game_id: opts.input.gameId,
+                        stat_date: timestamp,
                         scored_words: gameInfo.scoredWords,
                         game_started_at: gameInfo.dateTimeStarted,
-                        game_ended_at: timestamp
                     });
                 }
                 return {
