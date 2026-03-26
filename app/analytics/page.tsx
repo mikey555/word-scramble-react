@@ -8,6 +8,9 @@ import { fromCognitoIdentityPool } from '@aws-sdk/credential-providers';
 import { cn } from '~/lib/utils';
 import { lexend } from "~/components/Layout.tsx";
 import "~/styles/globals.css";
+import {Icons} from "~/components/ui/icons.tsx";
+import Link from "next/link";
+import {Button} from "~/components/ui/button.tsx";
 
 const IDENTITY_POOL_ID = 'us-east-1:5ad039b8-b53e-4d91-9e17-23ef304f4146';
 const REGION = 'us-east-1';
@@ -87,7 +90,7 @@ export default function AnalyticsPage() {
     if (loading) {
         return (
             <div className={cn("bg-gray-50 min-h-svh flex items-center justify-center touch-none text-base text-center", lexend.className)}>
-                <div className="text-gray-600">Loading analytics...</div>
+                <div className="text-gray-600"><Icons.spinner className="h-8 w-8 inline animate-spin ml-1" /></div>
             </div>
         );
     }
@@ -198,6 +201,7 @@ export default function AnalyticsPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
                 {/* Header */}
                 <div className="mb-8 text-left">
+                    <Button variant={"ghost"}><Link href="/">&lt; Back to game</Link></Button>
                     <h1 className="text-3xl font-semibold text-gray-900">lil word game analytics dashboard</h1>
                     <p className="mt-2 text-sm text-gray-600">
                         Real-time player activity and engagement metrics

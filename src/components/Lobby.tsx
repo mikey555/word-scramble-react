@@ -1,7 +1,7 @@
 
 import { api } from "~/utils/api";
 
-import { useState, FormEvent, ChangeEvent, useEffect } from "react";
+import {useState, FormEvent, ChangeEvent, useEffect, Fragment} from "react";
 
 // import { Button, TextField } from "@mui/material";
 
@@ -13,6 +13,7 @@ import { RulesDialog } from "./RulesDialog";
 import { useRouter } from "next/router";
 import { useSessionStorage } from "@react-hooks-library/core";
 import { SessionInfo } from "./Types";
+import Link from "next/link";
 
 
 interface LobbyProps {
@@ -91,16 +92,21 @@ export default function Lobby({ userId, onSetSessionInfo }: LobbyProps) {
     function lobbyBody() {
 
         return (
-            <div className="max-w-lg rounded-lg shadow-md bg-white p-6 space-y-6 border-gray-400 dark:border-gray-700">
-                <div id="lobby" className="flex flex-col items-center m-3 space-y-6 w-80">
-                    <h1 className="text-2xl">lil word game</h1>
-                    {gameId == undefined &&
-                        <>
-                            <div>Compete with up to 4 players to find the longest word.</div>
-                            <RulesDialog />
-                        </>
-                    }
-                    {lobbyStart()}
+            <div className="">
+                <div className="max-w-lg rounded-lg shadow-md bg-white p-6 space-y-6 border-gray-400 dark:border-gray-700">
+                    <div id="lobby" className="flex flex-col items-center m-3 space-y-6 w-80">
+                        <h1 className="text-2xl">lil word game</h1>
+                        {gameId == undefined &&
+                            <>
+                                <div>Compete with up to 4 players to find the longest word.</div>
+                                <RulesDialog />
+                            </>
+                        }
+                        {lobbyStart()}
+                    </div>
+                </div>
+                <div className="mt-5 text-sm text-gray-600 hover:text-green-700">
+                    <Link href="/analytics">Real-time analytics dashboard</Link>
                 </div>
             </div>
         )
