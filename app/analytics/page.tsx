@@ -235,69 +235,79 @@ export default function AnalyticsPage() {
                 {/* Top Words and Top Players */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                     {/* Top 10 Highest Scoring Words */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 text-left flex flex-col h-[400px]">
-                        <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-                            <h2 className="text-lg font-medium text-gray-900">Top Scoring Words</h2>
-                            <p className="mt-1 text-sm text-gray-500">Highest individual word scores</p>
-                        </div>
-                        <div className="px-6 py-4 overflow-y-auto flex-grow">
-                            {topWords.length === 0 ? (
-                                <p className="text-sm text-gray-500 text-center py-8">No words played yet</p>
-                            ) : (
-                                <div className="space-y-3">
-                                    {topWords.map((wordData, idx) => (
-                                        <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                                            <div className="flex items-center space-x-3">
-                                                <span className="text-lg font-semibold text-gray-400 w-8">#{idx + 1}</span>
-                                                <span className="text-base font-medium text-gray-900">{wordData.word}</span>
+                    <div className="relative">
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 text-left flex flex-col h-[400px]">
+                            <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+                                <h2 className="text-lg font-medium text-gray-900">Top Scoring Words</h2>
+                                <p className="mt-1 text-sm text-gray-500">Highest individual word scores</p>
+                            </div>
+                            <div className="px-6 py-4 overflow-y-auto flex-grow">
+                                {topWords.length === 0 ? (
+                                    <p className="text-sm text-gray-500 text-center py-8">No words played yet</p>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {topWords.map((wordData, idx) => (
+                                            <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                                                <div className="flex items-center space-x-3">
+                                                    <span className="text-lg font-semibold text-gray-400 w-8">#{idx + 1}</span>
+                                                    <span className="text-base font-medium text-gray-900">{wordData.word}</span>
+                                                </div>
+                                                <span className="text-lg font-semibold text-gray-900">{wordData.score}</span>
                                             </div>
-                                            <span className="text-lg font-semibold text-gray-900">{wordData.score}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
+                        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-white pointer-events-none" />
                     </div>
 
                     {/* Top 10 Highest Scoring Players */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 text-left flex flex-col h-[400px]">
-                        <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-                            <h2 className="text-lg font-medium text-gray-900">Top Scoring Players</h2>
-                            <p className="mt-1 text-sm text-gray-500">Best single-game performances</p>
-                        </div>
-                        <div className="px-6 py-4 overflow-y-auto flex-grow">
-                            {topPlayers.length === 0 ? (
-                                <p className="text-sm text-gray-500 text-center py-8">No completed games yet</p>
-                            ) : (
-                                <div className="space-y-4">
-                                    {topPlayers.map((player, idx) => (
-                                        <div key={idx} className="pb-3 border-b border-gray-100 last:border-0">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="flex items-center space-x-3">
-                                                    <span className="text-lg font-semibold text-gray-400 w-8">#{idx + 1}</span>
-                                                    <span className="text-sm text-gray-600">
+                    <div className="relative">
+                        <div
+                            className="bg-white rounded-lg shadow-sm border border-gray-200 text-left flex flex-col h-[400px]">
+                            <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+                                <h2 className="text-lg font-medium text-gray-900">Top Scoring Players</h2>
+                                <p className="mt-1 text-sm text-gray-500">Best single-game performances</p>
+                            </div>
+                            <div className="px-6 py-4 overflow-y-auto flex-grow">
+                                {topPlayers.length === 0 ? (
+                                    <p className="text-sm text-gray-500 text-center py-8">No completed games yet</p>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {topPlayers.map((player, idx) => (
+                                            <div key={idx} className="pb-3 border-b border-gray-100 last:border-0">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center space-x-3">
+                                                        <span
+                                                            className="text-lg font-semibold text-gray-400 w-8">#{idx + 1}</span>
+                                                        <span className="text-sm text-gray-600">
                             {player.userId.slice(0, 8)}...
                           </span>
+                                                    </div>
+                                                    <span
+                                                        className="text-lg font-semibold text-gray-900">{player.score}</span>
                                                 </div>
-                                                <span className="text-lg font-semibold text-gray-900">{player.score}</span>
-                                            </div>
-                                            <div className="ml-11 text-xs text-gray-600 flex flex-wrap items-center gap-x-2">
-                                                {player.words.map((w, widx) => (
-                                                    <React.Fragment key={widx}>
+                                                <div
+                                                    className="ml-11 text-xs text-gray-600 flex flex-wrap items-center gap-x-2">
+                                                    {player.words.map((w, widx) => (
+                                                        <React.Fragment key={widx}>
                             <span className="whitespace-nowrap">
                               {w.word} <span className="font-medium">({w.score})</span>
                             </span>
-                                                        {widx < player.words.length - 1 && (
-                                                            <span className="text-gray-300">|</span>
-                                                        )}
-                                                    </React.Fragment>
-                                                ))}
+                                                            {widx < player.words.length - 1 && (
+                                                                <span className="text-gray-300">|</span>
+                                                            )}
+                                                        </React.Fragment>
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
+                        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-white pointer-events-none" />
                     </div>
                 </div>
 

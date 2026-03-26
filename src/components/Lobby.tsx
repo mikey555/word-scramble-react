@@ -106,7 +106,7 @@ export default function Lobby({ userId, onSetSessionInfo }: LobbyProps) {
                     </div>
                 </div>
                 <div className="mt-5 text-sm text-gray-600 hover:text-green-700">
-                    <Link href="/analytics">Real-time analytics dashboard</Link>
+                    <Link href="/analytics">📊 See this game&apos;s real-time analytics dashboard!</Link>
                 </div>
             </div>
         )
